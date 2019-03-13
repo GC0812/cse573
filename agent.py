@@ -41,14 +41,19 @@ class A3CAgent:
 
     def eval_at_state(self):
         model_input = ModelInput()
-        model_input.state = self.preprocess_frame(self.episode.state_for_agent())
+        #GC
+        # model_input.state = self.preprocess_frame(self.episode.state_for_agent())
+        model_input.state = self.state
         model_input.hidden = self.hidden
         model_output = self.model.forward(model_input)
         return model_output
 
+    #GC
     @property
     def state(self):
-        return self.preprocess_frame(self.episode.state_for_agent())
+        frame = self.episode.state_for_agent()[0]
+        memory = self.episode.state_for_agent()[1]
+        return [self.preprocess_frame(frame), self.preprocess_memory(memory)]
 
     @property
     def episode(self):
@@ -152,6 +157,11 @@ class A3CAgent:
         frame = resnet_input_transform(frame, 84)
         state = torch.Tensor(frame)
         return gpuify(state.unsqueeze(0), self.gpu_id)
+    #GC
+    def preprocess_memory(self, memory):
+        """ Preprocess the current memory for input into the model. """
+        memory = torch.Tensor(memory)
+        return gpuify(memory.unsqueeze(0), self.gpu_id)
 
     def exit(self):
         self.episode.environment.controller.stop()

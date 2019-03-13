@@ -34,8 +34,9 @@ class Model(torch.nn.Module):
         self.maxp3 = nn.MaxPool2d(2, 2)
         self.conv4 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
         self.maxp4 = nn.MaxPool2d(2, 2)
-
-        self.lstm = nn.LSTMCell(1024, args.hidden_state_sz)
+        #GC
+        AdditionalSize = 2
+        self.lstm = nn.LSTMCell(1024+AdditionalSize, args.hidden_state_sz)
         self.critic_linear = nn.Linear(args.hidden_state_sz, 1)
         self.actor_linear = nn.Linear(args.hidden_state_sz, args.action_space)
 
@@ -56,15 +57,18 @@ class Model(torch.nn.Module):
         self.lstm.bias_hh.data.fill_(0)
 
         self.train()
-
+    #GC
     def embedding(self, state):
-        x = F.relu(self.maxp1(self.conv1(state)))
+        frame = state[0]
+        memory = state[1]
+        x = F.relu(self.maxp1(self.conv1(frame)))
         x = F.relu(self.maxp2(self.conv2(x)))
         x = F.relu(self.maxp3(self.conv3(x)))
         x = F.relu(self.maxp4(self.conv4(x)))
 
         x = x.view(x.size(0), -1)
-        return x
+        catx = torch.cat([x, memory],dim=1)
+        return catx
 
     def a3clstm(self, x, hidden):
         hx, cx = self.lstm(x, hidden)

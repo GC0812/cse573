@@ -37,8 +37,10 @@ class Episode:
     def environment(self):
         return self._env
 
+    #GC
     def state_for_agent(self):
-        return self.environment.current_frame
+        memory = self.target_found
+        return [self.environment.current_frame, memory]
 
     def step(self, action_as_int):
         action = self.actions_list[action_as_int]
@@ -66,11 +68,27 @@ class Episode:
         done = False
         action_was_successful = self.environment.last_action_success
 
+        #GC
+        if action['action'] == 'Done_T' and self.target_found == [0,0]:
+            objects = self._env.last_event.metadata['objects']
+            visible_objects = [o['objectType'] for o in objects if o['visible']]
+            if self.target[0] in visible_objects:
+                reward += GOAL_SUCCESS_REWARD
+                self.target_found[0]=1
+
+        if action['action'] == 'Done_B' and self.target_found == [0,0]:
+            objects = self._env.last_event.metadata['objects']
+            visible_objects = [o['objectType'] for o in objects if o['visible']]
+            if self.target[1] in visible_objects:
+                reward += GOAL_SUCCESS_REWARD
+                self.target_found[1]=1
+
         if action['action'] == 'Done':
             done = True
             objects = self._env.last_event.metadata['objects']
             visible_objects = [o['objectType'] for o in objects if o['visible']]
-            if self.target in visible_objects:
+            successflag = False
+            if all(tar in visible_objects for tar in self.target):
                 reward += GOAL_SUCCESS_REWARD
                 self.success = True
 
@@ -95,9 +113,12 @@ class Episode:
             self._env.reset(scene)
 
         # For now, single target.
-        self.target = 'Tomato'
+        #GC
+        self.target = ['Tomato','Bowl']
         self.success = False
         self.cur_scene = scene
         self.actions_taken = []
+
+        self.target_found=[0,0]
         
         return True

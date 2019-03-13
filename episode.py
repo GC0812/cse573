@@ -69,14 +69,14 @@ class Episode:
         action_was_successful = self.environment.last_action_success
 
         #GC
-        if action['action'] == 'Done_T' and self.target_found == [0,0]:
+        if action['action'] == 'DoneT' and self.target_found == [0,0]:
             objects = self._env.last_event.metadata['objects']
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             if self.target[0] in visible_objects:
                 reward += GOAL_SUCCESS_REWARD
                 self.target_found[0]=1
 
-        if action['action'] == 'Done_B' and self.target_found == [0,0]:
+        if action['action'] == 'DoneB' and self.target_found == [0,0]:
             objects = self._env.last_event.metadata['objects']
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             if self.target[1] in visible_objects:

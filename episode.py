@@ -89,7 +89,7 @@ class Episode:
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             successflag = False
             if all(tar in visible_objects for tar in self.target):
-                reward += GOAL_SUCCESS_REWARD
+                reward += GOAL_SUCCESS_REWARD * 5
                 self.success = True
 
         return reward, done, action_was_successful

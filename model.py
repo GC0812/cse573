@@ -83,7 +83,7 @@ class Model(torch.nn.Module):
         #GC
         # additional_score = self.augmented_linear(memory)
         # augmented_x = self.augmented_combination(torch.cat([x, additional_score], dim=1))
-        augmented_x = torch.cat([x, memory])
+        augmented_x = torch.cat([x, memory],dim=1)
         return augmented_x
 
     def a3clstm(self, x, hidden):

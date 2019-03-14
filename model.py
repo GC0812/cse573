@@ -41,7 +41,7 @@ class Model(torch.nn.Module):
         self.augmented_linear = nn.Linear(AdditionalSize, augmented_hidden_size)
         self.augmented_combination = nn.Linear(1024 + augmented_hidden_size, 1024)
 
-        self.lstm = nn.LSTMCell(1024+AdditionalSize, args.hidden_state_sz)
+        self.lstm = nn.LSTMCell(1024, args.hidden_state_sz)
         self.critic_linear = nn.Linear(args.hidden_state_sz, 1)
         self.actor_linear = nn.Linear(args.hidden_state_sz, args.action_space)
 

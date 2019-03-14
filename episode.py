@@ -69,27 +69,28 @@ class Episode:
         action_was_successful = self.environment.last_action_success
 
         #GC
-        if action['action'] == 'DoneT' and self.target_found == [0,0]:
+        if action['action'] == 'DoneT' and self.target_found[0] == 0:
             objects = self._env.last_event.metadata['objects']
+            self.target_found[0] = 1
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             if self.target[0] in visible_objects:
-                reward += GOAL_SUCCESS_REWARD
-                self.target_found[0]=1
 
-        if action['action'] == 'DoneB' and self.target_found == [0,0]:
+                reward += GOAL_SUCCESS_REWARD
+
+
+        if action['action'] == 'DoneB' and self.target_found[1] == 0:
             objects = self._env.last_event.metadata['objects']
+            self.target_found[1] = 1
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             if self.target[1] in visible_objects:
+                self.target_realfound[1] = 1
                 reward += GOAL_SUCCESS_REWARD
-                self.target_found[1]=1
 
-        if action['action'] == 'Done':
+
+        if sum(self.target_found) == 2:
             done = True
-            objects = self._env.last_event.metadata['objects']
-            visible_objects = [o['objectType'] for o in objects if o['visible']]
-            successflag = False
-            if all(tar in visible_objects for tar in self.target):
-                reward += GOAL_SUCCESS_REWARD * 10
+            if sum(self.target_realfound)==2:
+                reward += GOAL_SUCCESS_REWARD * 9
                 self.success = True
 
         return reward, done, action_was_successful
@@ -120,5 +121,6 @@ class Episode:
         self.actions_taken = []
 
         self.target_found=[0,0]
+        self.target_realfound=[0,0]
         
         return True

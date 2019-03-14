@@ -39,7 +39,10 @@ class Episode:
 
     #GC
     def state_for_agent(self):
-        memory = self.target_found
+        memory = [0.0, 0.0]
+        for i in range(2):
+            if self.target_found[i]==1:
+                memory[i] = 1.0
         return [self.environment.current_frame, memory]
 
     def step(self, action_as_int):
@@ -90,7 +93,7 @@ class Episode:
         if sum(self.target_found) == 2:
             done = True
             if sum(self.target_realfound)==2:
-                reward += GOAL_SUCCESS_REWARD
+                reward += GOAL_SUCCESS_REWARD*3
                 self.success = True
 
         return reward, done, action_was_successful

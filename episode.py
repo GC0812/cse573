@@ -90,7 +90,7 @@ class Episode:
         if sum(self.target_found) == 2:
             done = True
             if sum(self.target_realfound)==2:
-                reward += GOAL_SUCCESS_REWARD * 9
+                reward += GOAL_SUCCESS_REWARD
                 self.success = True
 
         return reward, done, action_was_successful

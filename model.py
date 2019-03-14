@@ -34,9 +34,14 @@ class Model(torch.nn.Module):
         self.maxp3 = nn.MaxPool2d(2, 2)
         self.conv4 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
         self.maxp4 = nn.MaxPool2d(2, 2)
+
         #GC
         AdditionalSize = 2
-        self.lstm = nn.LSTMCell(1024+AdditionalSize, args.hidden_state_sz)
+        augmented_hidden_size = 50
+        self.augmented_linear = nn.Linear(AdditionalSize, augmented_hidden_size)
+        self.augmented_combination = nn.Linear(1024 + augmented_hidden_size, 1024)
+
+        self.lstm = nn.LSTMCell(1024, args.hidden_state_sz)
         self.critic_linear = nn.Linear(args.hidden_state_sz, 1)
         self.actor_linear = nn.Linear(args.hidden_state_sz, args.action_space)
 
@@ -46,6 +51,14 @@ class Model(torch.nn.Module):
         self.conv2.weight.data.mul_(relu_gain)
         self.conv3.weight.data.mul_(relu_gain)
         self.conv4.weight.data.mul_(relu_gain)
+        #GC---
+        self.augmented_linear.weight.data = norm_col_init(
+            self.augmented_linear.weight.data, 0.01)
+        self.augmented_linear.bias.data.fill_(0)
+        self.augmented_combination.weight.data = norm_col_init(
+            self.augmented_combination.weight.data, 0.01)
+        self.augmented_combination.bias.data.fill_(0)
+        #GC---
         self.actor_linear.weight.data = norm_col_init(
             self.actor_linear.weight.data, 0.01)
         self.actor_linear.bias.data.fill_(0)
@@ -67,8 +80,11 @@ class Model(torch.nn.Module):
         x = F.relu(self.maxp4(self.conv4(x)))
 
         x = x.view(x.size(0), -1)
-        catx = torch.cat([x, memory],dim=1)
-        return catx
+        #GC
+        additional_score = self.augmented_linear(memory)
+        augmented_x = self.augmented_combination(torch.cat([x, additional_score], dim=1))
+
+        return augmented_x
 
     def a3clstm(self, x, hidden):
         hx, cx = self.lstm(x, hidden)

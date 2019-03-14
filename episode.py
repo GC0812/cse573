@@ -74,7 +74,7 @@ class Episode:
             self.target_found[0] = 1
             visible_objects = [o['objectType'] for o in objects if o['visible']]
             if self.target[0] in visible_objects:
-
+                self.target_realfound[0] = 1
                 reward += GOAL_SUCCESS_REWARD
 
 
